@@ -1,0 +1,456 @@
+---
+title: Model Comparison
+description: Compare outputs across multiple models simultaneously
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
+import { Card, Cards } from 'fumadocs-ui/components/card';
+
+# Model Comparison
+
+Compare responses from multiple AI models side-by-side to find the best model for your specific use case. Perfect for A/B testing, quality assessment, and understanding model strengths.
+
+<Callout type="info">
+  **Smart Comparison**: Run the same prompt across multiple models and analyze differences in style, accuracy, creativity, and performance.
+</Callout>
+
+## Basic Comparison
+
+<Tabs items={["Python", "JavaScript", "cURL"]}>
+<Tab value="Python">
+
+```python
+from openai import OpenAI
+
+client = OpenAI(
+    base_url="https://ai.megallm.io/v1",
+    api_key="your-api-key"
+)
+
+# Compare responses across multiple models
+comparison = client.compare(
+    models=["gpt-5", "claude-opus-4", "gemini-2.5-pro"],
+    messages=[
+        {"role": "user", "content": "Explain quantum computing in simple terms"}
+    ],
+    max_tokens=200
+)
+
+# Access results for each model
+for model, response in comparison.results.items():
+    print(f"\n--- {model} ---")
+    print(response.choices[0].message.content)
+    print(f"Tokens: {response.usage.total_tokens}")
+    print(f"Time: {response.response_time_ms}ms")
+```
+
+</Tab>
+<Tab value="JavaScript">
+
+```javascript
+const comparison = await fetch("https://ai.megallm.io/v1/compare", {
+  method: "POST",
+  headers: {
+    "Authorization": `Bearer ${API_KEY}`,
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify({
+    models: ["gpt-5", "claude-opus-4", "gemini-2.5-pro"],
+    messages: [
+      { role: "user", content: "Explain quantum computing in simple terms" }
+    ],
+    max_tokens: 200
+  })
+});
+
+const results = await comparison.json();
+
+// Process results
+Object.entries(results.comparisons).forEach(([model, response]) => {
+  console.log(`\n--- ${model} ---`);
+  console.log(response.choices[0].message.content);
+  console.log(`Tokens: ${response.usage.total_tokens}`);
+  console.log(`Time: ${response.response_time_ms}ms`);
+});
+```
+
+</Tab>
+<Tab value="cURL">
+
+```bash
+curl -X POST https://ai.megallm.io/v1/compare \
+  -H "Authorization: Bearer $API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "models": ["gpt-5", "claude-opus-4", "gemini-2.5-pro"],
+    "messages": [
+      {"role": "user", "content": "Explain quantum computing in simple terms"}
+    ],
+    "max_tokens": 200
+  }'
+```
+
+</Tab>
+</Tabs>
+
+## Advanced Comparison Features
+
+### Quality Metrics
+
+Automatically analyze response quality across multiple dimensions:
+
+```python
+comparison = client.compare(
+    models=["gpt-5", "claude-opus-4", "claude-sonnet-4"],
+    messages=messages,
+    analysis={
+        "metrics": [
+            "accuracy",      # Factual correctness
+            "clarity",       # Readability and structure
+            "creativity",    # Uniqueness and innovation
+            "conciseness",   # Information density
+            "relevance",     # Topic adherence
+            "safety"         # Content safety
+        ],
+        "scoring": "1-10",
+        "explanation": True  # Get reasoning for scores
+    }
+)
+
+# View quality analysis
+for model, analysis in comparison.quality_analysis.items():
+    print(f"\n{model} Quality Scores:")
+    for metric, score in analysis.scores.items():
+        print(f"  {metric}: {score}/10")
+    print(f"  Overall: {analysis.overall_score}/10")
+    print(f"  Reasoning: {analysis.explanation}")
+```
+
+### Performance Comparison
+
+Track performance metrics across models:
+
+```python
+performance = client.compare_performance(
+    models=["gpt-4o-mini", "gemini-2.0-flash", "gpt-3.5-turbo"],
+    test_prompts=[
+        "Simple greeting",
+        "Complex reasoning task",
+        "Code generation request",
+        "Creative writing prompt"
+    ],
+    metrics=["latency", "tokens_per_second", "cost_per_request"]
+)
+
+print(performance.summary_table())
+```
+
+### Cost Analysis
+
+Compare costs across different models and usage patterns:
+
+```python
+cost_comparison = client.compare_costs(
+    models=["gpt-5", "claude-opus-4", "gemini-2.5-pro", "gpt-4o-mini"],
+    usage_scenarios=[
+        {"input_tokens": 1000, "output_tokens": 500, "requests_per_day": 100},
+        {"input_tokens": 5000, "output_tokens": 2000, "requests_per_day": 50},
+        {"input_tokens": 500, "output_tokens": 200, "requests_per_day": 1000}
+    ]
+)
+
+# Show cost breakdown
+for scenario_idx, scenario in enumerate(cost_comparison.scenarios):
+    print(f"\nScenario {scenario_idx + 1}:")
+    print(f"Daily cost by model:")
+    for model, cost in scenario.daily_costs.items():
+        print(f"  {model}: ${cost:.2f}")
+```
+
+## Use Case Specific Comparisons
+
+### Code Generation
+
+Compare coding capabilities:
+
+```python
+code_comparison = client.compare(
+    models=["grok-code-fast-1", "gpt-5", "claude-sonnet-3.7"],
+    messages=[
+        {"role": "user", "content": "Write a Python function to implement binary search"}
+    ],
+    evaluation_criteria={
+        "code_quality": {
+            "syntax_correctness": True,
+            "algorithmic_efficiency": True,
+            "readability": True,
+            "documentation": True
+        },
+        "test_execution": {
+            "run_tests": True,
+            "test_cases": [
+                {"input": "[1,2,3,4,5], 3", "expected": "2"},
+                {"input": "[1,3,5,7,9], 6", "expected": "-1"}
+            ]
+        }
+    }
+)
+
+for model, result in code_comparison.results.items():
+    print(f"\n{model}:")
+    print(f"Code quality: {result.code_quality_score}/10")
+    print(f"Tests passed: {result.tests_passed}/{result.total_tests}")
+    print(f"Execution time: {result.avg_execution_time}ms")
+```
+
+### Creative Writing
+
+Evaluate creative capabilities:
+
+```python
+creative_comparison = client.compare(
+    models=["gpt-5", "claude-opus-4", "claude-sonnet-3.7"],
+    messages=[
+        {"role": "user", "content": "Write a short story about a robot discovering emotions"}
+    ],
+    creativity_analysis={
+        "originality": True,
+        "narrative_structure": True,
+        "character_development": True,
+        "emotional_depth": True,
+        "language_variety": True
+    }
+)
+```
+
+### Factual Accuracy
+
+Test knowledge and accuracy:
+
+```python
+accuracy_test = client.compare(
+    models=["gpt-5", "claude-opus-4", "gemini-2.5-pro"],
+    messages=[
+        {"role": "user", "content": "What are the symptoms of diabetes?"}
+    ],
+    fact_checking={
+        "verify_claims": True,
+        "medical_accuracy": True,
+        "source_citations": True,
+        "completeness": True
+    }
+)
+```
+
+## Comparison Strategies
+
+### A/B Testing
+
+Run production A/B tests:
+
+```python
+ab_test = client.setup_ab_test(
+    name="customer_support_optimization",
+    models={
+        "control": "gpt-4o-mini",
+        "variant_a": "claude-sonnet-3.5",
+        "variant_b": "gpt-5-mini"
+    },
+    traffic_split={"control": 0.5, "variant_a": 0.25, "variant_b": 0.25},
+    success_metrics=[
+        "user_satisfaction_score",
+        "resolution_time",
+        "escalation_rate"
+    ],
+    duration_days=14
+)
+
+# Monitor results
+results = client.get_ab_test_results("customer_support_optimization")
+print(f"Winning variant: {results.winner}")
+print(f"Confidence: {results.statistical_confidence}%")
+```
+
+### Quality Benchmarking
+
+Benchmark against standard datasets:
+
+```python
+benchmark = client.run_benchmark(
+    models=["gpt-5", "claude-opus-4", "gemini-2.5-pro"],
+    datasets=[
+        "hellaswag",      # Common sense reasoning
+        "mmlu",           # Multitask language understanding
+        "humaneval",      # Code generation
+        "gsm8k"          # Grade school math
+    ],
+    custom_evaluation=True
+)
+
+# View benchmark results
+benchmark.plot_results()
+benchmark.export_report("model_benchmark_2024.pdf")
+```
+
+## Real-time Comparison Dashboard
+
+Set up live monitoring:
+
+```python
+# Create comparison dashboard
+dashboard = client.create_comparison_dashboard(
+    models=["gpt-5", "claude-opus-4", "gemini-2.5-pro"],
+    metrics=[
+        "response_time",
+        "token_efficiency",
+        "user_preference",
+        "error_rate",
+        "cost_per_interaction"
+    ],
+    update_interval="real-time"
+)
+
+# Access dashboard URL
+print(f"Dashboard: {dashboard.url}")
+
+# Set up alerts
+dashboard.add_alert(
+    condition="response_time > 5000ms",
+    action="email",
+    recipients=["dev-team@company.com"]
+)
+```
+
+## Comparison Automation
+
+### Scheduled Comparisons
+
+Run regular model evaluations:
+
+```python
+# Schedule daily model comparison
+scheduler = client.schedule_comparison(
+    name="daily_model_eval",
+    models=["gpt-5", "claude-opus-4", "gemini-2.5-pro"],
+    test_suite="production_prompts",
+    schedule="daily_at_2am",
+    alert_on_regression=True,
+    slack_webhook="https://hooks.slack.com/..."
+)
+```
+
+### Continuous Integration
+
+Integrate with CI/CD:
+
+```yaml
+# .github/workflows/model-comparison.yml
+name: Model Performance Check
+on:
+  pull_request:
+    paths: ['prompts/**']
+
+jobs:
+  compare-models:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Run Model Comparison
+        run: |
+          curl -X POST https://ai.megallm.io/v1/ci/compare \
+            -H "Authorization: Bearer ${{ secrets.MEGALLM_API_KEY }}" \
+            -d '{
+              "models": ["gpt-5", "claude-opus-4"],
+              "test_file": "prompts/test_suite.json",
+              "threshold": 0.05
+            }'
+```
+
+## Best Practices
+
+<Callout type="tip">
+  **Statistical Significance**: Run comparisons with sufficient sample sizes for reliable results. We recommend at least 30 examples per model.
+</Callout>
+
+### 1. Fair Comparison Setup
+
+```python
+# Ensure fair comparison
+comparison_config = {
+    "same_prompts": True,        # Use identical inputs
+    "same_parameters": {         # Standardize settings
+        "temperature": 0.7,
+        "max_tokens": 500,
+        "top_p": 0.95
+    },
+    "randomize_order": True,     # Prevent bias
+    "blind_evaluation": True     # Hide model names during eval
+}
+```
+
+### 2. Comprehensive Evaluation
+
+```python
+# Multi-dimensional comparison
+evaluation_framework = {
+    "quality_metrics": ["accuracy", "coherence", "relevance"],
+    "performance_metrics": ["latency", "throughput", "reliability"],
+    "cost_metrics": ["price_per_token", "total_cost", "value_ratio"],
+    "user_experience": ["satisfaction", "preference", "usefulness"]
+}
+```
+
+### 3. Domain-Specific Testing
+
+```python
+# Tailor comparisons to your use case
+domain_tests = {
+    "medical": {
+        "accuracy": "high_priority",
+        "safety": "critical",
+        "models": ["gpt-5", "claude-opus-4"]  # Conservative selection
+    },
+    "creative": {
+        "originality": "high_priority",
+        "diversity": "high_priority",
+        "models": ["gpt-5", "claude-opus-4", "gemini-2.5-pro"]
+    },
+    "code": {
+        "correctness": "critical",
+        "efficiency": "high_priority",
+        "models": ["grok-code-fast-1", "gpt-5", "claude-sonnet-3.7"]
+    }
+}
+```
+
+## Export and Sharing
+
+Share comparison results:
+
+```python
+# Export detailed report
+report = comparison.export_report(
+    format="pdf",
+    include_raw_data=True,
+    charts=True,
+    summary=True
+)
+
+# Share results
+comparison.share(
+    recipients=["team@company.com"],
+    message="Latest model comparison results",
+    include_recommendations=True
+)
+
+# Integration with tools
+comparison.send_to_slack("#ai-team")
+comparison.save_to_notion_database(database_id="abc123")
+```
+
+## Next Steps
+
+- Set up [Automatic Fallbacks](/docs/features/fallback) based on comparison results
+- Configure [Load Balancing](/docs/features/load-balancing) for optimal model distribution
+- Explore [Custom Metrics](/docs/features/metrics) for domain-specific evaluation

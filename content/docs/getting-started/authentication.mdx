@@ -1,0 +1,197 @@
+---
+title: Authentication
+description: Learn how to authenticate with MegaLLM API
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
+import { Steps, Step } from 'fumadocs-ui/components/steps';
+
+# Authentication
+
+MegaLLM uses API keys for authentication. This guide covers all authentication methods and best practices.
+
+## Authentication Methods
+
+### Bearer Token
+
+The most common authentication method is using a Bearer token in the Authorization header:
+
+```http
+Authorization: Bearer YOUR_API_KEY
+```
+
+### API Key Header (Anthropic Format)
+
+For Anthropic-compatible endpoints, you can also use the `x-api-key` header:
+
+```http
+x-api-key: YOUR_API_KEY
+```
+
+## Getting Your API Key
+
+<Steps>
+<Step>
+
+### Option 1: Device Flow Authentication
+
+The recommended method for obtaining an API key is through device flow:
+
+```bash
+# Start the authentication process
+curl -X POST https://ai.megallm.io/auth/device \
+  -H "Content-Type: application/json"
+```
+
+You'll receive a response with:
+- `device_code`: Your unique device identifier
+- `user_code`: Code to enter for authentication
+- `verification_uri`: URL to visit for authentication
+
+</Step>
+
+<Step>
+
+### Option 2: Dashboard
+
+You can generate an API key from the MegaLLM dashboard:
+
+1. Visit the MegaLLM dashboard
+2. Navigate to API Keys section
+3. Generate a new API key
+4. Copy the key and store it securely
+
+</Step>
+
+<Step>
+
+### Option 3: CLI Tool
+
+If you have the MegaLLM CLI installed:
+
+```bash
+megallm auth token
+```
+
+</Step>
+</Steps>
+
+## Security Best Practices
+
+<Callout type="warning">
+  **Never expose your tokens**: Always store tokens in environment variables or secure vaults, never in code.
+</Callout>
+
+### Environment Variables
+
+<Tabs items={["Linux/Mac", "Windows", "Docker"]}>
+<Tab value="Linux/Mac">
+
+```bash
+# Add to ~/.bashrc or ~/.zshrc
+export MEGALLM_API_KEY="your_api_key_here"
+
+# Or use a .env file
+echo "MEGALLM_API_KEY=your_api_key_here" >> .env
+```
+
+</Tab>
+<Tab value="Windows">
+
+```powershell
+# Set environment variable
+[System.Environment]::SetEnvironmentVariable("MEGALLM_API_KEY", "your_api_key_here", "User")
+
+# Or use command prompt
+setx MEGALLM_API_KEY "your_api_key_here"
+```
+
+</Tab>
+<Tab value="Docker">
+
+```dockerfile
+# In Dockerfile
+ENV MEGALLM_API_KEY=${MEGALLM_API_KEY}
+
+# Or in docker-compose.yml
+environment:
+  - MEGALLM_API_KEY=${MEGALLM_API_KEY}
+```
+
+</Tab>
+</Tabs>
+
+## Using SDKs
+
+### OpenAI SDK
+
+```python
+from openai import OpenAI
+
+client = OpenAI(
+    base_url="https://ai.megallm.io/v1",
+    api_key=os.getenv("MEGALLM_API_KEY")
+)
+
+response = client.chat.completions.create(
+    model="gpt-4",
+    messages=[{"role": "user", "content": "Hello!"}]
+)
+```
+
+### Anthropic SDK
+
+```python
+from anthropic import Anthropic
+
+client = Anthropic(
+    base_url="https://ai.megallm.io",
+    api_key=os.getenv("MEGALLM_API_KEY")
+)
+
+message = client.messages.create(
+    model="claude-3.5-sonnet",
+    max_tokens=100,
+    messages=[{"role": "user", "content": "Hello!"}]
+)
+```
+
+### LangChain Integration
+
+```python
+from langchain_openai import ChatOpenAI
+
+llm = ChatOpenAI(
+    base_url="https://ai.megallm.io/v1",
+    api_key=os.getenv("MEGALLM_API_KEY"),
+    model="gpt-4"
+)
+
+response = llm.invoke("Hello!")
+```
+
+## Troubleshooting
+
+### Common Authentication Errors
+
+| Error Code | Message | Solution |
+|------------|---------|----------|
+| 401 | Unauthorized | Check if your API key is valid and not expired |
+| 403 | Forbidden | Verify API key has required access |
+| 429 | Rate Limited | Wait and retry or contact support |
+
+### Debugging Authentication
+
+Enable debug mode to see detailed authentication information:
+
+```bash
+curl https://ai.megallm.io/v1/chat/completions \
+  -H "Authorization: Bearer $MEGALLM_API_KEY" \
+  -H "X-Debug-Auth: true" \
+  -d '{"model": "gpt-4", "messages": [...]}'
+```
+
+<Callout type="info">
+  **Need Help?** Check our [FAQ](/docs/faq#authentication) or contact support if you're experiencing authentication issues.
+</Callout>

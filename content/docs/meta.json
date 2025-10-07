@@ -1,0 +1,12 @@
+{
+  "title": "Documentation",
+  "pages": [
+    "index",
+    "models",
+    "getting-started",
+    "openai",
+    "anthropic",
+    "api",
+    "faq"
+  ]
+}

@@ -1,0 +1,964 @@
+openapi: 3.0.3
+info:
+  title: Megallm API
+  description: |
+
+  version: 1.0.0
+  contact:
+    name: Megallm API
+    url: https://megallm.io
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:4141
+    description: Local development server
+  - url: https://ai.megallm.io
+    description: Production server
+
+paths:
+  # OpenAI Compatible Endpoints
+  /chat/completions:
+    post:
+      summary: Create chat completion
+      description: |
+        Creates a chat completion response with OpenAI compatibility.
+        Supports streaming, tool calling, and structured output.
+      operationId: createChatCompletion
+      tags:
+        - OpenAI Compatible
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChatCompletionRequest'
+            examples:
+              simple_chat:
+                summary: Simple chat completion
+                value:
+                  model: "gpt-4"
+                  messages:
+                    - role: "user"
+                      content: "Hello, how are you?"
+                  max_tokens: 100
+              tool_calling:
+                summary: Tool calling example
+                value:
+                  model: "gpt-4"
+                  messages:
+                    - role: "user"
+                      content: "What's the weather like in San Francisco?"
+                  tools:
+                    - type: "function"
+                      function:
+                        name: "get_weather"
+                        description: "Get current weather for a location"
+                        parameters:
+                          type: "object"
+                          properties:
+                            location:
+                              type: "string"
+                              description: "City name"
+                          required: ["location"]
+              structured_output:
+                summary: Structured output with JSON schema
+                value:
+                  model: "gpt-4"
+                  messages:
+                    - role: "user"
+                      content: "Generate a user profile"
+                  response_format:
+                    type: "json_schema"
+                    json_schema:
+                      name: "user_profile"
+                      schema:
+                        type: "object"
+                        properties:
+                          name:
+                            type: "string"
+                          age:
+                            type: "integer"
+                          email:
+                            type: "string"
+                        required: ["name", "age"]
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatCompletionResponse'
+            text/event-stream:
+              schema:
+                $ref: '#/components/schemas/ChatCompletionStreamResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/RateLimit'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /v1/chat/completions:
+    post:
+      summary: Create chat completion (v1)
+      description: OpenAI v1 compatible chat completion endpoint
+      operationId: createChatCompletionV1
+      tags:
+        - OpenAI Compatible
+      security:
+        - BearerAuth: []
+      requestBody:
+        $ref: '#/paths/~1chat~1completions/post/requestBody'
+      responses:
+        $ref: '#/paths/~1chat~1completions/post/responses'
+
+  /embeddings:
+    post:
+      summary: Create embeddings
+      description: Create embeddings for input text
+      operationId: createEmbeddings
+      tags:
+        - OpenAI Compatible
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmbeddingRequest'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmbeddingResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /v1/embeddings:
+    post:
+      summary: Create embeddings (v1)
+      description: OpenAI v1 compatible embeddings endpoint
+      operationId: createEmbeddingsV1
+      tags:
+        - OpenAI Compatible
+      security:
+        - BearerAuth: []
+      requestBody:
+        $ref: '#/paths/~1embeddings/post/requestBody'
+      responses:
+        $ref: '#/paths/~1embeddings/post/responses'
+
+  /models:
+    get:
+      summary: List available models
+      description: Retrieve list of available models from Megallm
+      operationId: listModels
+      tags:
+        - OpenAI Compatible
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModelListResponse'
+
+  /v1/models:
+    get:
+      summary: List available models (v1)
+      description: OpenAI v1 compatible models endpoint
+      operationId: listModelsV1
+      tags:
+        - OpenAI Compatible
+      security:
+        - BearerAuth: []
+      responses:
+        $ref: '#/paths/~1models/get/responses'
+
+  # Anthropic Compatible Endpoints
+  /v1/messages:
+    post:
+      summary: Create message (Anthropic Claude API)
+      description: |
+        Create a message using Anthropic Claude API format, translated to work with Megallm.
+        Supports streaming, tool use, and vision capabilities.
+      operationId: createMessage
+      tags:
+        - Anthropic Compatible
+      security:
+        - AnthropicAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MessageRequest'
+            examples:
+              simple_message:
+                summary: Simple message
+                value:
+                  model: "claude-3-sonnet-20240229"
+                  max_tokens: 100
+                  messages:
+                    - role: "user"
+                      content: "Hello, Claude!"
+              tool_use:
+                summary: Tool use example
+                value:
+                  model: "claude-3-sonnet-20240229"
+                  max_tokens: 500
+                  tools:
+                    - name: "get_weather"
+                      description: "Get current weather for a location"
+                      input_schema:
+                        type: "object"
+                        properties:
+                          location:
+                            type: "string"
+                            description: "City name"
+                        required: ["location"]
+                  messages:
+                    - role: "user"
+                      content: "What's the weather in London?"
+              vision:
+                summary: Vision example with image
+                value:
+                  model: "claude-3-sonnet-20240229"
+                  max_tokens: 300
+                  messages:
+                    - role: "user"
+                      content:
+                        - type: "text"
+                          text: "What's in this image?"
+                        - type: "image"
+                          source:
+                            type: "base64"
+                            media_type: "image/jpeg"
+                            data: "/9j/4AAQSkZJRgABAQEAYABgAAD..."
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+            text/event-stream:
+              schema:
+                $ref: '#/components/schemas/MessageStreamResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/RateLimit'
+
+  # Management Endpoints
+  /performance:
+    get:
+      summary: Performance dashboard
+      description: Get comprehensive performance metrics and system status
+      operationId: getPerformanceMetrics
+      tags:
+        - Management
+      responses:
+        '200':
+          description: Performance metrics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PerformanceMetrics'
+
+  /usage:
+    get:
+      summary: Usage statistics
+      description: Get API usage statistics and token consumption
+      operationId: getUsageStats
+      tags:
+        - Management
+      responses:
+        '200':
+          description: Usage statistics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsageStats'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      description: API key
+    AnthropicAuth:
+      type: apiKey
+      in: header
+      name: x-api-key
+      description: Anthropic API key format
+
+  schemas:
+    # OpenAI Schema Types
+    ChatCompletionRequest:
+      type: object
+      required:
+        - model
+        - messages
+      properties:
+        model:
+          type: string
+          description: Model ID to use for completion
+          example: "gpt-4"
+        messages:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChatMessage'
+          description: List of messages in the conversation
+        max_tokens:
+          type: integer
+          minimum: 1
+          description: Maximum number of tokens to generate
+          example: 100
+        temperature:
+          type: number
+          minimum: 0
+          maximum: 2
+          description: Sampling temperature
+          example: 0.7
+        top_p:
+          type: number
+          minimum: 0
+          maximum: 1
+          description: Nucleus sampling parameter
+          example: 1
+        stream:
+          type: boolean
+          description: Whether to stream back partial progress
+          example: false
+        tools:
+          type: array
+          items:
+            $ref: '#/components/schemas/Tool'
+          description: List of tools available to the model
+        tool_choice:
+          oneOf:
+            - type: string
+              enum: ["none", "auto"]
+            - type: object
+              properties:
+                type:
+                  type: string
+                  enum: ["function"]
+                function:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+          description: Controls which tools are called
+        response_format:
+          type: object
+          properties:
+            type:
+              type: string
+              enum: ["text", "json_object", "json_schema"]
+            json_schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                schema:
+                  type: object
+                strict:
+                  type: boolean
+          description: Format for the response
+
+    ChatMessage:
+      type: object
+      required:
+        - role
+        - content
+      properties:
+        role:
+          type: string
+          enum: ["system", "user", "assistant", "tool"]
+          description: Role of the message author
+        content:
+          oneOf:
+            - type: string
+            - type: array
+              items:
+                $ref: '#/components/schemas/ContentPart'
+          description: Message content
+        name:
+          type: string
+          description: Name of the author (for tool messages)
+        tool_calls:
+          type: array
+          items:
+            $ref: '#/components/schemas/ToolCall'
+          description: Tool calls made by the assistant
+        tool_call_id:
+          type: string
+          description: ID of the tool call this message responds to
+
+    ContentPart:
+      oneOf:
+        - type: object
+          properties:
+            type:
+              type: string
+              enum: ["text"]
+            text:
+              type: string
+        - type: object
+          properties:
+            type:
+              type: string
+              enum: ["image_url"]
+            image_url:
+              type: object
+              properties:
+                url:
+                  type: string
+                detail:
+                  type: string
+                  enum: ["low", "high", "auto"]
+
+    Tool:
+      type: object
+      required:
+        - type
+        - function
+      properties:
+        type:
+          type: string
+          enum: ["function"]
+        function:
+          type: object
+          required:
+            - name
+            - description
+          properties:
+            name:
+              type: string
+              description: Function name
+            description:
+              type: string
+              description: Function description
+            parameters:
+              type: object
+              description: JSON Schema for function parameters
+
+    ToolCall:
+      type: object
+      required:
+        - id
+        - type
+        - function
+      properties:
+        id:
+          type: string
+          description: Unique ID for the tool call
+        type:
+          type: string
+          enum: ["function"]
+        function:
+          type: object
+          properties:
+            name:
+              type: string
+            arguments:
+              type: string
+              description: JSON string of arguments
+
+    ChatCompletionResponse:
+      type: object
+      required:
+        - id
+        - object
+        - created
+        - model
+        - choices
+      properties:
+        id:
+          type: string
+          description: Unique ID for the completion
+        object:
+          type: string
+          enum: ["chat.completion"]
+        created:
+          type: integer
+          description: Unix timestamp
+        model:
+          type: string
+          description: Model used for completion
+        choices:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChatChoice'
+        usage:
+          $ref: '#/components/schemas/Usage'
+
+    ChatChoice:
+      type: object
+      required:
+        - index
+        - message
+        - finish_reason
+      properties:
+        index:
+          type: integer
+        message:
+          $ref: '#/components/schemas/ChatMessage'
+        finish_reason:
+          type: string
+          enum: ["stop", "length", "tool_calls", "content_filter"]
+
+    ChatCompletionStreamResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        object:
+          type: string
+          enum: ["chat.completion.chunk"]
+        created:
+          type: integer
+        model:
+          type: string
+        choices:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChatStreamChoice'
+
+    ChatStreamChoice:
+      type: object
+      properties:
+        index:
+          type: integer
+        delta:
+          $ref: '#/components/schemas/ChatMessage'
+        finish_reason:
+          type: string
+          enum: ["stop", "length", "tool_calls", "content_filter"]
+
+    # Anthropic Schema Types
+    MessageRequest:
+      type: object
+      required:
+        - model
+        - max_tokens
+        - messages
+      properties:
+        model:
+          type: string
+          description: Claude model to use
+          example: "claude-3-sonnet-20240229"
+        max_tokens:
+          type: integer
+          minimum: 1
+          description: Maximum tokens to generate
+        messages:
+          type: array
+          items:
+            $ref: '#/components/schemas/AnthropicMessage'
+        system:
+          type: string
+          description: System prompt
+        temperature:
+          type: number
+          minimum: 0
+          maximum: 1
+        top_p:
+          type: number
+          minimum: 0
+          maximum: 1
+        stream:
+          type: boolean
+        tools:
+          type: array
+          items:
+            $ref: '#/components/schemas/AnthropicTool'
+
+    AnthropicMessage:
+      type: object
+      required:
+        - role
+        - content
+      properties:
+        role:
+          type: string
+          enum: ["user", "assistant"]
+        content:
+          oneOf:
+            - type: string
+            - type: array
+              items:
+                $ref: '#/components/schemas/AnthropicContentBlock'
+
+    AnthropicContentBlock:
+      oneOf:
+        - type: object
+          properties:
+            type:
+              type: string
+              enum: ["text"]
+            text:
+              type: string
+        - type: object
+          properties:
+            type:
+              type: string
+              enum: ["image"]
+            source:
+              type: object
+              properties:
+                type:
+                  type: string
+                  enum: ["base64"]
+                media_type:
+                  type: string
+                data:
+                  type: string
+        - type: object
+          properties:
+            type:
+              type: string
+              enum: ["tool_use"]
+            id:
+              type: string
+            name:
+              type: string
+            input:
+              type: object
+        - type: object
+          properties:
+            type:
+              type: string
+              enum: ["tool_result"]
+            tool_use_id:
+              type: string
+            content:
+              type: string
+
+    AnthropicTool:
+      type: object
+      required:
+        - name
+        - description
+        - input_schema
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        input_schema:
+          type: object
+
+    MessageResponse:
+      type: object
+      required:
+        - id
+        - type
+        - role
+        - content
+        - model
+        - usage
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          enum: ["message"]
+        role:
+          type: string
+          enum: ["assistant"]
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/AnthropicContentBlock'
+        model:
+          type: string
+        usage:
+          $ref: '#/components/schemas/Usage'
+
+    MessageStreamResponse:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: ["message_start", "content_block_start", "content_block_delta", "content_block_stop", "message_delta", "message_stop"]
+        message:
+          $ref: '#/components/schemas/MessageResponse'
+        index:
+          type: integer
+        delta:
+          type: object
+
+    # Common Schema Types
+    EmbeddingRequest:
+      type: object
+      required:
+        - model
+        - input
+      properties:
+        model:
+          type: string
+          description: Embedding model to use
+        input:
+          oneOf:
+            - type: string
+            - type: array
+              items:
+                type: string
+          description: Text to embed
+        encoding_format:
+          type: string
+          enum: ["float", "base64"]
+          default: "float"
+
+    EmbeddingResponse:
+      type: object
+      required:
+        - object
+        - data
+        - model
+        - usage
+      properties:
+        object:
+          type: string
+          enum: ["list"]
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Embedding'
+        model:
+          type: string
+        usage:
+          $ref: '#/components/schemas/Usage'
+
+    Embedding:
+      type: object
+      required:
+        - object
+        - embedding
+        - index
+      properties:
+        object:
+          type: string
+          enum: ["embedding"]
+        embedding:
+          type: array
+          items:
+            type: number
+        index:
+          type: integer
+
+    ModelListResponse:
+      type: object
+      required:
+        - object
+        - data
+      properties:
+        object:
+          type: string
+          enum: ["list"]
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Model'
+
+    Model:
+      type: object
+      required:
+        - id
+        - object
+        - created
+        - owned_by
+      properties:
+        id:
+          type: string
+        object:
+          type: string
+          enum: ["model"]
+        created:
+          type: integer
+        owned_by:
+          type: string
+        capabilities:
+          type: object
+          properties:
+            vision:
+              type: boolean
+            function_calling:
+              type: boolean
+            max_context_length:
+              type: integer
+
+    Usage:
+      type: object
+      properties:
+        prompt_tokens:
+          type: integer
+        completion_tokens:
+          type: integer
+        total_tokens:
+          type: integer
+
+    # Management Schema Types
+    PerformanceMetrics:
+      type: object
+      properties:
+        system:
+          type: object
+          properties:
+            cpu_usage:
+              type: number
+            memory_usage:
+              type: number
+            uptime:
+              type: integer
+        api:
+          type: object
+          properties:
+            total_requests:
+              type: integer
+            requests_per_minute:
+              type: number
+            average_response_time:
+              type: number
+            error_rate:
+              type: number
+        cache:
+          type: object
+          properties:
+            hit_rate:
+              type: number
+            size_mb:
+              type: number
+            evictions:
+              type: integer
+
+    UsageStats:
+      type: object
+      properties:
+        total_requests:
+          type: integer
+        total_tokens:
+          type: integer
+        total_cost:
+          type: number
+        requests_by_model:
+          type: object
+        tokens_by_model:
+          type: object
+        requests_by_hour:
+          type: array
+          items:
+            type: object
+            properties:
+              hour:
+                type: string
+              count:
+                type: integer
+
+    # Error Schema Types
+    Error:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: object
+          required:
+            - message
+            - type
+          properties:
+            message:
+              type: string
+              description: Human-readable error message
+            type:
+              type: string
+              description: Error type identifier
+            param:
+              type: string
+              description: Parameter that caused the error
+            code:
+              type: string
+              description: Error code
+
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error:
+              message: "Invalid request parameter"
+              type: "invalid_request_error"
+              param: "model"
+
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error:
+              message: "Invalid authentication credentials"
+              type: "authentication_error"
+
+    RateLimit:
+      description: Rate limit exceeded
+      headers:
+        Retry-After:
+          schema:
+            type: integer
+          description: Number of seconds to wait before retrying
+        X-RateLimit-Reset:
+          schema:
+            type: integer
+          description: Unix timestamp when rate limit resets
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error:
+              message: "Rate limit exceeded"
+              type: "rate_limit_error"
+
+    InternalError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error:
+              message: "Internal server error"
+              type: "internal_error"
+
+tags:
+  - name: OpenAI Compatible
+    description: OpenAI API compatible endpoints
+  - name: Anthropic Compatible
+    description: Anthropic Claude API compatible endpoints
+  - name: Management
+    description: Management and monitoring endpoints
+
+externalDocs:
+  description: Find more information in the GitHub repository
+  url: https://github.com/priyanshu/megallm

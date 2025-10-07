@@ -1,0 +1,170 @@
+---
+title: Models Catalog
+description: Complete list of available AI models through MegaLLM API
+---
+
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
+import { Card, Cards } from 'fumadocs-ui/components/card';
+import { Callout } from 'fumadocs-ui/components/callout';
+import ModelsCatalog from '@/components/ModelsCatalog';
+
+# Models Catalog
+
+Access cutting-edge AI models from leading providers through a single, unified API. All models are accessible using their model ID in your API calls.
+
+## Live Models Data
+
+<ModelsCatalog />
+
+## Model Selection Guide
+
+### By Use Case
+
+<Cards>
+  <Card
+    title="🚀 Fast Responses"
+    description="gpt-5-mini, gpt-4o-mini, gemini-2.0-flash-001, gpt-3.5-turbo"
+  />
+  <Card
+    title="🧠 Complex Reasoning"
+    description="gpt-5, claude-opus-4-1-20250805, gemini-2.5-pro"
+  />
+  <Card
+    title="💰 Cost-Effective"
+    description="gpt-4o-mini, gemini-2.0-flash-001, xai/grok-code-fast-1"
+  />
+  <Card
+    title="📚 Large Context"
+    description="gpt-4.1 (1M+), gemini-2.5-pro (1M+), xai/grok-code-fast-1 (256K)"
+  />
+  <Card
+    title="🖼️ Vision Tasks"
+    description="gpt-5, gpt-4o, claude-sonnet-4, gemini models"
+  />
+  <Card
+    title="💻 Code Generation"
+    description="xai/grok-code-fast-1, gpt-5, claude-3.7-sonnet"
+  />
+</Cards>
+
+### By Budget
+
+| Budget Tier | Recommended Model IDs | Use Cases |
+|-------------|----------------------|-----------|
+| **Economy** | `gpt-4o-mini`, `gemini-2.0-flash-001` | Prototyping, simple tasks |
+| **Standard** | `gpt-5-mini`, `claude-3.5-sonnet` | Production apps, chatbots |
+| **Premium** | `gpt-5`, `claude-sonnet-4` | Advanced reasoning, analysis |
+| **Enterprise** | `claude-opus-4-1-20250805`, `gpt-4.1` | Critical applications, research |
+
+## Using Models in Code
+
+Always use the model ID when making API calls:
+
+<Tabs items={["Python", "JavaScript", "cURL"]}>
+<Tab value="Python">
+
+```python
+from openai import OpenAI
+
+client = OpenAI(
+    base_url="https://ai.megallm.io/v1",
+    api_key="your-api-key"
+)
+
+# Use model ID, not display name
+response = client.chat.completions.create(
+    model="gpt-5",  # Model ID
+    messages=[{"role": "user", "content": "Hello!"}]
+)
+
+# Switch to Claude using model ID
+response = client.chat.completions.create(
+    model="claude-opus-4-1-20250805",  # Model ID
+    messages=[{"role": "user", "content": "Hello!"}]
+)
+
+# Try Gemini using model ID
+response = client.chat.completions.create(
+    model="gemini-2.5-pro",  # Model ID
+    messages=[{"role": "user", "content": "Hello!"}]
+)
+```
+
+</Tab>
+<Tab value="JavaScript">
+
+```javascript
+// Always use model IDs
+const models = ['gpt-5', 'claude-opus-4-1-20250805', 'gemini-2.5-pro'];
+
+for (const modelId of models) {
+  const response = await fetch("https://ai.megallm.io/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${API_KEY}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      model: modelId,  // Using model ID
+      messages: [{ role: "user", content: "Hello!" }]
+    })
+  });
+
+  console.log(`${modelId} response:`, await response.json());
+}
+```
+
+</Tab>
+<Tab value="cURL">
+
+```bash
+# Test multiple models using their IDs
+for model in "gpt-5" "claude-opus-4-1-20250805" "gemini-2.5-pro"; do
+  echo "Testing $model..."
+  curl https://ai.megallm.io/v1/chat/completions \
+    -H "Authorization: Bearer $API_KEY" \
+    -H "Content-Type: application/json" \
+    -d "{
+      \"model\": \"$model\",
+      \"messages\": [{\"role\": \"user\", \"content\": \"Hello!\"}]
+    }"
+done
+```
+
+</Tab>
+</Tabs>
+
+## Automatic Fallback
+
+Configure automatic fallback using model IDs:
+
+```python
+response = client.chat.completions.create(
+    model="gpt-5",
+    messages=messages,
+    fallback_models=["claude-opus-4-1-20250805", "gemini-2.5-pro"],
+    fallback_on_rate_limit=True,
+    fallback_on_error=True
+)
+```
+
+## Pricing Calculator
+
+Estimate your costs across different models:
+
+| Usage Level | Tokens/Month | gpt-5-mini | claude-3.5-sonnet | gemini-2.0-flash-001 |
+|-------------|--------------|------------|-------------------|----------------------|
+| **Hobby** | 1M | $2.25 | $18 | $0.75 |
+| **Startup** | 10M | $22.50 | $180 | $7.50 |
+| **Business** | 100M | $225 | $1,800 | $75 |
+| **Enterprise** | 1B+ | Custom | Custom | Custom |
+
+<Callout type="warning">
+  **Important**: Model IDs are case-sensitive. Always use the exact model ID as shown in the tables above.
+</Callout>
+
+## Next Steps
+
+- Learn about [Automatic Fallbacks](/docs/features/fallback) for high availability
+- Check [Provider-Specific Features](/docs/providers) for advanced capabilities
+- View [Use Cases](/docs/use-cases) for different scenarios

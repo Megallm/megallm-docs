@@ -1,0 +1,9 @@
+{
+  "title": "OpenAI API",
+  "pages": [
+    "index",
+    "chat-completions",
+    "streaming",
+    "function-calling"
+  ]
+}

@@ -1,0 +1,145 @@
+---
+title: MegaLLM Documentation
+description: Universal AI Platform - 70+ Models, One API
+---
+
+import { Card, Cards } from 'fumadocs-ui/components/card';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# MegaLLM Documentation
+
+Welcome to MegaLLM - the universal AI platform that connects 70+ large language models through a single, powerful API.
+
+<Callout type="info">
+  **One API, Unlimited Possibilities**: Access GPT-5, Claude Opus 4.1, Gemini 2.5 Pro, and more models without juggling multiple providers.
+</Callout>
+
+## What is MegaLLM?
+
+MegaLLM is your **"super-API"** for AI. Instead of integrating with OpenAI, Anthropic, Google, and other providers separately, you get access to all their models through one unified interface.
+
+### Why MegaLLM?
+
+- **🚀 Instant Model Switching**: Change models with one parameter
+- **🔄 Automatic Fallbacks**: Never go down when one model fails
+- **💰 Unified Billing**: One invoice for all your AI usage
+- **⚡ Zero Integration Overhead**: Drop-in replacement for existing code
+
+## Quick Start
+
+<Cards>
+  <Card
+    title="🎯 Models Catalog"
+    description="Browse 70+ AI models with pricing and capabilities"
+    href="/docs/models"
+  />
+  <Card
+    title="⚡ Quick Start"
+    description="Get your API key and make your first request"
+    href="/docs/getting-started/quick-start"
+  />
+  <Card
+    title="📚 OpenAI API"
+    description="Use OpenAI-compatible endpoints with any model"
+    href="/docs/openai"
+  />
+  <Card
+    title="🤖 Anthropic API"
+    description="Access Claude models with Anthropic format"
+    href="/docs/anthropic"
+  />
+</Cards>
+
+## Core Features
+
+<Cards>
+  <Card
+    title="🔄 Automatic Fallback"
+    description="Ensure high availability with intelligent model switching"
+    href="/docs/features/fallback"
+  />
+  <Card
+    title="🔐 Authentication"
+    description="Simple API key management and security"
+    href="/docs/getting-started/authentication"
+  />
+  <Card
+    title="❓ FAQ"
+    description="Frequently asked questions and troubleshooting"
+    href="/docs/faq"
+  />
+</Cards>
+
+## Who Uses MegaLLM?
+
+### 👨‍💻 Developers
+- Experiment with different models without rewriting code
+- Reduce integration complexity from weeks to minutes
+- Build more robust applications with automatic fallbacks
+
+### 🏢 Businesses
+- Ensure high availability for customer-facing AI features
+- Optimize costs across multiple model providers
+- Future-proof AI investments with provider flexibility
+
+### 🔬 Researchers
+- Access cutting-edge models as they're released
+- Run comprehensive evaluations and benchmarks
+- Test model performance across different tasks
+
+## Example: Switching Models
+
+```python
+from openai import OpenAI
+
+client = OpenAI(
+    base_url="https://ai.megallm.io/v1",
+    api_key="your-api-key"
+)
+
+# Try GPT-5 for complex reasoning
+response = client.chat.completions.create(
+    model="gpt-5",
+    messages=[{"role": "user", "content": "Analyze this data..."}]
+)
+
+# Switch to Grok for code generation
+response = client.chat.completions.create(
+    model="xai/grok-code-fast-1",
+    messages=[{"role": "user", "content": "Write a Python function..."}]
+)
+
+# Use Claude for creative writing
+response = client.chat.completions.create(
+    model="claude-opus-4-1-20250805",
+    messages=[{"role": "user", "content": "Write a story about..."}]
+)
+```
+
+## Popular Model Combinations
+
+| Use Case | Primary Model | Fallback Models | Why |
+|----------|---------------|-----------------|-----|
+| **Chatbots** | gpt-4o-mini | gpt-3.5-turbo, claude-3.5-sonnet | Fast, cost-effective |
+| **Code Generation** | xai/grok-code-fast-1 | gpt-5, claude-3.7-sonnet | Specialized for code |
+| **Analysis** | claude-opus-4-1-20250805 | gpt-5, gemini-2.5-pro | Best reasoning |
+| **Creative Writing** | claude-opus-4-1-20250805 | gpt-5, claude-sonnet-4 | Creative excellence |
+
+## Getting Started
+
+<Callout type="tip">
+  **Ready to get started?** Head to our [Quick Start guide](/docs/getting-started/quick-start) to make your first API call in minutes.
+</Callout>
+
+### 3-Step Setup
+
+1. **Get API Key**: Sign up and get your MegaLLM API key
+2. **Choose Format**: Use OpenAI or Anthropic API format
+3. **Start Building**: Make your first request to any of 70+ models
+
+## Need Help?
+
+- 📖 **Browse our guides**: Comprehensive documentation for every feature
+- 💬 **Check the FAQ**: Common questions and solutions
+- 📧 **Contact support**: support@megallm.io for technical assistance
+- 🔍 **Use search**: Press Cmd+K to search all documentation

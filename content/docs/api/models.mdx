@@ -1,0 +1,243 @@
+---
+title: Models API
+description: REST API endpoint for retrieving available models and their specifications
+---
+
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# Models API
+
+The Models API provides access to all available models through MegaLLM's documentation site. This endpoint returns the same data displayed in the [Models Catalog](/docs/models) page.
+
+## Endpoint
+
+```
+GET /api/models
+```
+
+## Response Format
+
+The API returns a JSON response with the following structure:
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "gpt-4o-mini",
+      "object": "model",
+      "type": "chat",
+      "created_at": "2024-07-18T00:00:00.000Z",
+      "owned_by": "openai",
+      "display_name": "GPT-4o mini",
+      "capabilities": {
+        "supports_function_calling": true,
+        "supports_vision": true,
+        "supports_streaming": true,
+        "supports_structured_output": true
+      },
+      "pricing": {
+        "input_tokens_cost_per_million": 0.15,
+        "output_tokens_cost_per_million": 0.6,
+        "currency": "USD"
+      },
+      "context_length": 128000,
+      "max_output_tokens": 16384
+    }
+  ],
+  "total": 89,
+  "lastUpdated": "2025-01-29T10:30:00.000Z"
+}
+```
+
+## Response Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `success` | boolean | Whether the request was successful |
+| `data` | array | Array of model objects |
+| `total` | number | Total number of models returned |
+| `lastUpdated` | string | ISO timestamp of when the data was last fetched |
+
+### Model Object Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | string | Model identifier used in API calls |
+| `object` | string | Always "model" |
+| `type` | string | Model type (e.g., "chat", "embedding") |
+| `created_at` | string | ISO timestamp of model creation |
+| `owned_by` | string | Provider/owner of the model |
+| `display_name` | string | Human-readable model name |
+| `capabilities` | object | Model capabilities object |
+| `pricing` | object | Pricing information |
+| `context_length` | number | Maximum context window in tokens |
+| `max_output_tokens` | number | Maximum output tokens |
+
+### Capabilities Object
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `supports_function_calling` | boolean | Function/tool calling support |
+| `supports_vision` | boolean | Image/vision processing support |
+| `supports_streaming` | boolean | Response streaming support |
+| `supports_structured_output` | boolean | Structured JSON output support |
+
+### Pricing Object
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `input_tokens_cost_per_million` | number | Cost per million input tokens |
+| `output_tokens_cost_per_million` | number | Cost per million output tokens |
+| `currency` | string | Pricing currency (always "USD") |
+
+## Usage Examples
+
+<Tabs items={["JavaScript", "Python", "cURL"]}>
+<Tab value="JavaScript">
+
+```javascript
+// Fetch all models
+async function fetchModels() {
+  try {
+    const response = await fetch('/api/models');
+    const { success, data, total } = await response.json();
+
+    if (success) {
+      console.log(`Found ${total} models:`);
+      data.forEach(model => {
+        console.log(`${model.id} - ${model.display_name}`);
+      });
+    }
+  } catch (error) {
+    console.error('Error fetching models:', error);
+  }
+}
+
+// Filter models by provider
+async function getOpenAIModels() {
+  const response = await fetch('/api/models');
+  const { data } = await response.json();
+
+  const openaiModels = data.filter(model =>
+    model.owned_by.toLowerCase().includes('openai')
+  );
+
+  return openaiModels;
+}
+
+// Find models with specific capabilities
+async function getVisionModels() {
+  const response = await fetch('/api/models');
+  const { data } = await response.json();
+
+  return data.filter(model =>
+    model.capabilities.supports_vision
+  );
+}
+```
+
+</Tab>
+<Tab value="Python">
+
+```python
+import requests
+
+# Fetch all models
+def fetch_models():
+    try:
+        response = requests.get('https://yourdomain.com/api/models')
+        data = response.json()
+
+        if data['success']:
+            print(f"Found {data['total']} models:")
+            for model in data['data']:
+                print(f"{model['id']} - {model['display_name']}")
+
+    except Exception as e:
+        print(f"Error fetching models: {e}")
+
+# Filter models by price range
+def get_budget_models(max_input_cost=1.0):
+    response = requests.get('https://yourdomain.com/api/models')
+    data = response.json()
+
+    budget_models = [
+        model for model in data['data']
+        if model['pricing']['input_tokens_cost_per_million'] <= max_input_cost
+    ]
+
+    return budget_models
+
+# Get models with function calling
+def get_function_calling_models():
+    response = requests.get('https://yourdomain.com/api/models')
+    data = response.json()
+
+    return [
+        model for model in data['data']
+        if model['capabilities']['supports_function_calling']
+    ]
+```
+
+</Tab>
+<Tab value="cURL">
+
+```bash
+# Fetch all models
+curl -X GET https://yourdomain.com/api/models
+
+# Using jq to filter results
+curl -s https://yourdomain.com/api/models | jq '.data[] | select(.owned_by | contains("openai"))'
+
+# Get model count
+curl -s https://yourdomain.com/api/models | jq '.total'
+
+# Find cheapest input pricing
+curl -s https://yourdomain.com/api/models | jq '.data | min_by(.pricing.input_tokens_cost_per_million)'
+```
+
+</Tab>
+</Tabs>
+
+## Error Responses
+
+If the API encounters an error, it returns a response with `success: false`:
+
+```json
+{
+  "success": false,
+  "error": "Failed to fetch models: Service unavailable",
+  "data": [],
+  "total": 0
+}
+```
+
+## Rate Limiting
+
+This endpoint has no rate limiting as it serves cached data from the MegaLLM API.
+
+## Use Cases
+
+This API endpoint is useful for:
+
+- **Dynamic Model Selection**: Programmatically choose models based on capabilities and pricing
+- **Documentation Tools**: Build dynamic documentation that stays up-to-date
+- **Price Comparison**: Compare costs across different models and providers
+- **Feature Discovery**: Find models with specific capabilities like vision or function calling
+- **Integration Testing**: Validate available models before making API calls
+
+<Callout type="info">
+  **Live Data**: This endpoint fetches real-time data from the MegaLLM API, so the available models and pricing may change over time.
+</Callout>
+
+<Callout type="warning">
+  **Model IDs**: Always use the `id` field (not `display_name`) when making actual API calls to the MegaLLM service.
+</Callout>
+
+## Related
+
+- [Models Catalog](/docs/models) - Interactive model browser
+- [Getting Started](/docs/getting-started) - How to use these models
+- [Authentication](/docs/getting-started/authentication) - API authentication guide
