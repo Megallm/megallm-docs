@@ -92,39 +92,25 @@ export default function ModelsCatalog() {
     return `$${price}`;
   };
 
-  const formatDiscountedPrice = (price: number | undefined): JSX.Element => {
-    if (price === undefined || price === null || price === 0) return <span>N/A</span>;
+  const formatPriceValue = (price: number | undefined): string => {
+    if (price === undefined || price === null || price === 0) return 'N/A';
 
-    const originalPrice = Math.round(price * 100) / 100; // Round to 2 decimal places to fix precision issues
-    const discountedPrice = originalPrice * 0.05; // 90% off means 10% of original price
+    const roundedPrice = Math.round(price * 100) / 100;
 
     // Format to remove unnecessary trailing zeros
-    const formatPrice = (val: number) => {
-      return val % 1 === 0 ? val.toString() : val.toFixed(3).replace(/\.?0+$/, '');
-    };
-
-    return (
-      <div className="space-y-1.5">
-        <div className="flex items-center justify-between gap-2 min-h-[20px]">
-          <span className="text-xs line-through text-gray-400 font-medium flex-shrink-0">${formatPrice(originalPrice)}</span>
-          <span className="bg-gradient-to-r from-yellow-400 to-yellow-500 text-yellow-900 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wide shadow-sm flex-shrink-0 leading-tight">
-            95% OFF
-          </span>
-        </div>
-        <div className="text-green-600 font-bold text-sm leading-none">
-          ${formatPrice(discountedPrice)}
-        </div>
-      </div>
-    );
+    if (roundedPrice % 1 === 0) {
+      return `$${roundedPrice.toString()}`;
+    }
+    return `$${roundedPrice.toFixed(3).replace(/\.?0+$/, '')}`;
   };
 
   const getFeatureIcons = (capabilities: ModelCapabilities): string => {
     const icons: string[] = [];
-    if (capabilities.supports_function_calling) icons.push('🎯');
-    if (capabilities.supports_vision) icons.push('🖼️');
-    if (capabilities.supports_streaming) icons.push('📡');
-    if (capabilities.supports_structured_output) icons.push('🔧');
-    return icons.join('');
+    if (capabilities.supports_function_calling) icons.push('FC');
+    if (capabilities.supports_vision) icons.push('V');
+    if (capabilities.supports_streaming) icons.push('S');
+    if (capabilities.supports_structured_output) icons.push('SO');
+    return icons.join(' | ');
   };
 
   const filterModelsByProvider = (provider: string) => {
@@ -192,7 +178,7 @@ export default function ModelsCatalog() {
       <div className="mb-6 flex items-center justify-between">
         <div className="flex items-center gap-4">
           <span className="text-sm text-gray-600 dark:text-gray-400">
-            🔴 Live Data - {models.length} models available
+            Live Data - {models.length} models available
           </span>
           {lastUpdated && (
             <span className="text-xs text-gray-500">
@@ -249,8 +235,8 @@ export default function ModelsCatalog() {
                     <td className="px-3 py-4 text-sm">{model.owned_by}</td>
                     <td className="px-3 py-4 text-sm text-center">{formatContextWindow(model.context_length)}</td>
                     <td className="px-3 py-4 text-sm text-center">{formatMaxOutput(model.max_output_tokens)}</td>
-                    <td className="px-2 py-4 text-sm w-28">{formatDiscountedPrice(model.pricing?.input_tokens_cost_per_million)}</td>
-                    <td className="px-2 py-4 text-sm w-28">{formatDiscountedPrice(model.pricing?.output_tokens_cost_per_million)}</td>
+                    <td className="px-2 py-4 text-sm w-28">{formatPriceValue(model.pricing?.input_tokens_cost_per_million)}</td>
+                    <td className="px-2 py-4 text-sm w-28">{formatPriceValue(model.pricing?.output_tokens_cost_per_million)}</td>
                     <td className="px-3 py-4 text-sm text-center">{getFeatureIcons(model.capabilities)}</td>
                   </tr>
                 ))}
@@ -258,7 +244,7 @@ export default function ModelsCatalog() {
             </table>
           </div>
           <p className="mt-4 text-sm text-gray-600 dark:text-gray-400">
-            <strong>Legend</strong>: 🎯 Function Calling | 🖼️ Vision | 📡 Streaming | 🔧 Structured Output
+            <strong>Legend</strong>: FC: Function Calling | V: Vision | S: Streaming | SO: Structured Output
           </p>
         </Tab>
 
@@ -282,8 +268,8 @@ export default function ModelsCatalog() {
                     <td className="px-4 py-3 text-sm font-mono text-blue-600 dark:text-blue-400">{model.id}</td>
                     <td className="px-4 py-3 text-sm">{formatContextWindow(model.context_length)}</td>
                     <td className="px-4 py-3 text-sm">{formatMaxOutput(model.max_output_tokens)}</td>
-                    <td className="px-4 py-3 text-sm">{formatDiscountedPrice(model.pricing?.input_tokens_cost_per_million)}</td>
-                    <td className="px-4 py-3 text-sm">{formatDiscountedPrice(model.pricing?.output_tokens_cost_per_million)}</td>
+                    <td className="px-4 py-3 text-sm">{formatPriceValue(model.pricing?.input_tokens_cost_per_million)}</td>
+                    <td className="px-4 py-3 text-sm">{formatPriceValue(model.pricing?.output_tokens_cost_per_million)}</td>
                     <td className="px-4 py-3 text-sm">{getFeatureIcons(model.capabilities)}</td>
                   </tr>
                 ))}
@@ -312,8 +298,8 @@ export default function ModelsCatalog() {
                     <td className="px-4 py-3 text-sm font-mono text-blue-600 dark:text-blue-400">{model.id}</td>
                     <td className="px-4 py-3 text-sm">{formatContextWindow(model.context_length)}</td>
                     <td className="px-4 py-3 text-sm">{formatMaxOutput(model.max_output_tokens)}</td>
-                    <td className="px-4 py-3 text-sm">{formatDiscountedPrice(model.pricing?.input_tokens_cost_per_million)}</td>
-                    <td className="px-4 py-3 text-sm">{formatDiscountedPrice(model.pricing?.output_tokens_cost_per_million)}</td>
+                    <td className="px-4 py-3 text-sm">{formatPriceValue(model.pricing?.input_tokens_cost_per_million)}</td>
+                    <td className="px-4 py-3 text-sm">{formatPriceValue(model.pricing?.output_tokens_cost_per_million)}</td>
                     <td className="px-4 py-3 text-sm">{getFeatureIcons(model.capabilities)}</td>
                   </tr>
                 ))}
@@ -342,8 +328,8 @@ export default function ModelsCatalog() {
                     <td className="px-4 py-3 text-sm font-mono text-blue-600 dark:text-blue-400">{model.id}</td>
                     <td className="px-4 py-3 text-sm">{formatContextWindow(model.context_length)}</td>
                     <td className="px-4 py-3 text-sm">{formatMaxOutput(model.max_output_tokens)}</td>
-                    <td className="px-4 py-3 text-sm">{formatDiscountedPrice(model.pricing?.input_tokens_cost_per_million)}</td>
-                    <td className="px-4 py-3 text-sm">{formatDiscountedPrice(model.pricing?.output_tokens_cost_per_million)}</td>
+                    <td className="px-4 py-3 text-sm">{formatPriceValue(model.pricing?.input_tokens_cost_per_million)}</td>
+                    <td className="px-4 py-3 text-sm">{formatPriceValue(model.pricing?.output_tokens_cost_per_million)}</td>
                     <td className="px-4 py-3 text-sm">{getFeatureIcons(model.capabilities)}</td>
                   </tr>
                 ))}
@@ -372,8 +358,8 @@ export default function ModelsCatalog() {
                     <td className="px-4 py-3 text-sm font-mono text-blue-600 dark:text-blue-400">{model.id}</td>
                     <td className="px-4 py-3 text-sm">{formatContextWindow(model.context_length)}</td>
                     <td className="px-4 py-3 text-sm">{formatMaxOutput(model.max_output_tokens)}</td>
-                    <td className="px-4 py-3 text-sm">{formatDiscountedPrice(model.pricing?.input_tokens_cost_per_million)}</td>
-                    <td className="px-4 py-3 text-sm">{formatDiscountedPrice(model.pricing?.output_tokens_cost_per_million)}</td>
+                    <td className="px-4 py-3 text-sm">{formatPriceValue(model.pricing?.input_tokens_cost_per_million)}</td>
+                    <td className="px-4 py-3 text-sm">{formatPriceValue(model.pricing?.output_tokens_cost_per_million)}</td>
                     <td className="px-4 py-3 text-sm">{getFeatureIcons(model.capabilities)}</td>
                   </tr>
                 ))}
@@ -402,8 +388,8 @@ export default function ModelsCatalog() {
                     <td className="px-4 py-3 text-sm font-mono text-blue-600 dark:text-blue-400">{model.id}</td>
                     <td className="px-4 py-3 text-sm">{formatContextWindow(model.context_length)}</td>
                     <td className="px-4 py-3 text-sm">{formatMaxOutput(model.max_output_tokens)}</td>
-                    <td className="px-4 py-3 text-sm">{formatDiscountedPrice(model.pricing?.input_tokens_cost_per_million)}</td>
-                    <td className="px-4 py-3 text-sm">{formatDiscountedPrice(model.pricing?.output_tokens_cost_per_million)}</td>
+                    <td className="px-4 py-3 text-sm">{formatPriceValue(model.pricing?.input_tokens_cost_per_million)}</td>
+                    <td className="px-4 py-3 text-sm">{formatPriceValue(model.pricing?.output_tokens_cost_per_million)}</td>
                     <td className="px-4 py-3 text-sm">{getFeatureIcons(model.capabilities)}</td>
                   </tr>
                 ))}
@@ -440,8 +426,8 @@ export default function ModelsCatalog() {
                     <td className="px-3 py-4 text-sm">{model.owned_by}</td>
                     <td className="px-3 py-4 text-sm text-center">{formatContextWindow(model.context_length)}</td>
                     <td className="px-3 py-4 text-sm text-center">{formatMaxOutput(model.max_output_tokens)}</td>
-                    <td className="px-2 py-4 text-sm w-28">{formatDiscountedPrice(model.pricing?.input_tokens_cost_per_million)}</td>
-                    <td className="px-2 py-4 text-sm w-28">{formatDiscountedPrice(model.pricing?.output_tokens_cost_per_million)}</td>
+                    <td className="px-2 py-4 text-sm w-28">{formatPriceValue(model.pricing?.input_tokens_cost_per_million)}</td>
+                    <td className="px-2 py-4 text-sm w-28">{formatPriceValue(model.pricing?.output_tokens_cost_per_million)}</td>
                     <td className="px-3 py-4 text-sm text-center">{getFeatureIcons(model.capabilities)}</td>
                   </tr>
                 ))}
@@ -469,7 +455,7 @@ export default function ModelsCatalog() {
                     <td className="px-3 py-4 text-sm font-mono text-blue-600 dark:text-blue-400">{model.id}</td>
                     <td className="px-3 py-4 text-sm">{model.owned_by}</td>
                     <td className="px-3 py-4 text-sm text-center">{formatContextWindow(model.context_length)}</td>
-                    <td className="px-2 py-4 text-sm w-28">{formatDiscountedPrice(model.pricing?.input_tokens_cost_per_million)}</td>
+                    <td className="px-2 py-4 text-sm w-28">{formatPriceValue(model.pricing?.input_tokens_cost_per_million)}</td>
                     <td className="px-3 py-4 text-sm text-center">{getFeatureIcons(model.capabilities)}</td>
                   </tr>
                 ))}
