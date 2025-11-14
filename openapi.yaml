@@ -12,8 +12,8 @@ info:
     url: https://opensource.org/licenses/MIT
 
 servers:
-  - url: http://localhost:4141
-    description: Local development server
+  - url: https://ai.megallm.io
+    description: server
   - url: https://ai.megallm.io
     description: Production server
 
